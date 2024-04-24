@@ -1,0 +1,309 @@
+
+/* Estilos generales */
+body {
+  background-color: #f5f5f5;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: #9cc32a;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Estilos del encabezado */
+.header {
+  background-image: url('files/logo_transparente.png');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Estilos de los enlaces */
+.enlaces_aplicacion,
+.enlaces_aplicacion a {
+  color: #333;
+  font-size: 20px;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.enlaces_aplicacion a:hover {
+  color: #6c871d;
+}
+
+.enlace_categorias_blanco {
+  color: white;
+}
+
+/* Estilos de los íconos */
+.icono_estandares,
+.icono_descarga {
+  margin: 5px;
+}
+
+/* Estilos de los elementos "item" */
+.item {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.item h3 {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.item p {
+  margin-bottom: 10px;
+}
+
+/* Estilos del menú de aplicaciones */
+#barra_categorias {
+  background-color: #9fdb2c;
+  padding: 10px;
+  text-align: center;
+  margin: 20px 0;
+}
+
+#barra_categorias a {
+  color: #333;
+  font-weight: bold;
+  margin: 0 10px;
+  padding: 10px;
+  text-decoration: none;
+}
+
+#barra_categorias a:hover {
+  background-color: #6fab00;
+  color: #fff;
+}
+
+#barra_categorias a.enlace_visitado {
+  background-color: #6fab00;
+  color: #fff;
+}
+/* Estilos del submenú de aplicaciones */
+.barra_subcategorias {
+	width:100%;
+	text-align: center;
+	padding: 0.1em;
+	border: solid #6fab00;
+	border-width: 0px 0px 1px 0px;
+	font-size: ;
+	margin-bottom: 1.5em;
+}
+
+
+
+/* Estilos de las aplicaciones */
+.aplicacion {
+  background-color: #f3f3f3;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.aplicacion h3 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.aplicacion p {
+  margin-bottom: 10px;
+}
+
+/* Estilos de los botones de descarga */
+.botones {
+  margin-top: 20px;
+}
+
+.boton {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #9fdb2c;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.boton:hover {
+  background-color: #6fab00;
+}
+
+/* Estilos de los votos */
+.area_votos {
+  margin: 10px 0;
+  text-align: left;
+}
+
+.estrellas {
+  float: left;
+  margin-right: 10px;
+}
+
+.nota_votos {
+  float: left;
+  color: #777;
+  font-size: 14px;
+  line-height: 18px;
+  margin-top: 5px;
+}
+
+.votos {
+  float: left;
+  color: #777;
+  font-size: 14px;
+  line-height: 18px;
+  margin-top: 5px;
+}
+
+/* Estilos del pie de página */
+.footer {
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+}
+
+.footer a {
+  color: #fff;
+}
+
+.footer a:hover {
+  color: #9fdb2c;
+}
+.icono_categoria {
+  float: left;
+  padding: 0.5em;
+  width: 128px;
+  margin: 0.5em;
+}
+
+.aplicacion2 {
+  text-align: left;
+  padding: 0em;
+  margin: 0em 0em 1em 0em;
+  background: #f8f8f8;
+}
+#div.titulo {
+  color: white;
+  background: #9fdb2c url('files/titulo_aplicacion.png') repeat-x;  /* Color verde de png de la URL, para cambiarlo hay que cambiar el png*/
+  margin: 0px;
+  padding: 0.5em 0.5em 0em 0.5em;
+  border: 0px;
+}
+#div.descarga_windows {
+	background: url('files/descarga_windows.png') no-repeat;
+}
+.aplicacion2 {
+  border-bottom: 1px solid black;
+  display: flex;
+  align-items: center;
+}
+
+.aplicacion2 .titulo {
+  flex: 1;
+}
+
+.aplicacion2 .contenido {
+  flex: 2;
+  display: flex;
+  align-items: center;
+}
+
+.aplicacion2 .contenido p {
+  margin-right: 1em;
+}
+
+.aplicacion2 .flags {
+  margin-right: 1em;
+}
+
+.aplicacion2 .botones {
+  display: flex;
+}
+
+.aplicacion2 .boton {
+  margin-right: 0.5em;
+}
+
+.aplicacion2 .boton:last-child {
+  margin-right: 0;
+}
+
+.icono_aplicacion {
+  width: 60px;
+  height: 60px;
+}
+
+.pantallazo_aplicacion img {
+  margin-right: 0.5em;
+}
+
+#barra_categorias {
+  border-bottom: 1px solid black;
+  padding-bottom: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+#barra_categorias a {
+  margin-right: 1em;
+}
+
+#barra_categorias a:last-child {
+  margin-right: 0;
+}
+
+h3 {
+  margin: 0.5em 0;
+}
+.icono_categoria {
+  display: inline-block;
+  text-align: center;
+  margin-right: 2em;
+}
+
+.icono_categoria:last-child {
+  margin-right: 0;
+}
+.aplicaciones {
+  display: inline-block;
+  text-align: center;
+  margin-right: 2em;
+}
+
+.aplicaciones:last-child {
+  margin-right: 0;
+}
+.subcategoria_manuales {
+  border-bottom: 1px solid #ccc;
+}
+
+.subcategoria_manuales .contenido_manuales {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.subcategoria_manuales .manual {
+  flex-basis: calc(33.33% - 20px);
+  margin: 10px;
+}
+ /* Estilo para ajustar el iframe al tamaño del footer */
+#footer-frame {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px; /* Ajusta la altura según el contenido de tu footer */
+            border: none; /* Elimina el borde del iframe */
+        }
