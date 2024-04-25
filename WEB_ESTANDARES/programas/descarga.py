@@ -8,10 +8,9 @@ import wget
 import os
 import logging
 import datetime
-
 # Configurar el nivel de logs y el formato
 logging.basicConfig(
-    filename='app.log', 
+    filename='webEstandares.log', 
     level=logging.INFO, 
     format='%(asctime)s - %(levelname)s - %(message)s'
     )
@@ -22,7 +21,7 @@ current_date = datetime.datetime.now().strftime("%d-%m-%Y")
 header = f"=== Ejecucion Actualizador {current_date} ==="
 
 # Agregar el encabezado al archivo de log
-with open('app.log', 'a') as f:
+with open('webEstandares.log', 'a') as f:
     f.write(header + '\n')
 
 # Función para obtener la versión del archivo utilizando una expresión regular
@@ -107,7 +106,7 @@ def comparar_versiones(version1, version2, simbolo):
     return 0
 
 # Función para buscar un archivo existente para reemplazar si no encuentra version antigua devuelve 'primera descarga'
-def buscar_archivo_a_reemplazar(version_descargada, nombre, simbolo):    
+def buscar_archivo_a_reemplazar(version_descargada, nombre, simbolo):  
     for filename in os.listdir('./descargas'):
         if filename.startswith(nombre):
             version_existente = obtener_version(pattern, filename)
@@ -118,69 +117,110 @@ def buscar_archivo_a_reemplazar(version_descargada, nombre, simbolo):
                     return None
     return 'primera descarga'
 
+def modificar_htmls(html_files, enlace, version, aplicacion):
+    for index, html_file in enumerate(html_files):
+        # Construir la ruta adecuada dependiendo del índice
+        if index == 0:
+            ruta = "aplicacion/" + html_file
+        else:
+            ruta = "aplicaciones/" + html_file
+
+        # Abrir el archivo HTML y leer su contenido
+        with open(ruta, "r") as f:
+            html_content = f.read()
+
+        # Crear un objeto BeautifulSoup para analizar el HTML
+        soup = BeautifulSoup(html_content, "html.parser")
+
+        # Encuentra todos los elementos <a> en el HTML
+        link = soup.find("a", id=aplicacion.lower())
+        span = soup.find('span', id=aplicacion.lower()+"_version")
+
+        # Modificar el atributo href de cada enlace encontrado
+        if link:
+            link["href"] = "https://softlibre.unizar.es/estandares/aplicacion/"+enlace
+
+        if span:
+            span.string = version
+
+        # Guardar los cambios en el archivo HTML
+        with open(ruta, "w") as f:
+            f.write(str(soup))
+
 # Lista de descargas con la información de cada una
 descargas = [
     {"url": "https://www.thunderbird.net/es-ES/", "nombre": "Thunderbird",
-     "filtro": {'href': lambda href: href and re.search(r'os=win64&lang=es-ES', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
-    #{"url": "https://download.mozilla.org/?product=firefox-latest-ssl&os=win64&lang=es-ES", "nombre": "Firefox", "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
+     "filtro": {'href': lambda href: href and re.search(r'os=win64&lang=es-ES', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":["thunderbird.html", "internet.html"]},
+    #{"url": "https://download.mozilla.org/?product=firefox-latest-ssl&os=win64&lang=es-ES", "nombre": "Firefox",
+    # "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"firefox.html, internet.html"}},
     #{"url": "https://filezilla-project.org/download.php?show_all=1", "nombre": "FileZilla",
-    # "filtro": {'href': lambda href: href and re.search(r'win64-setup.exe', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
-    #{"url": "https://sourceforge.net/projects/atunes/files/latest/download", "nombre": "aTunes", "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
-    #{"url": "https://www.gimp.org/downloads/", "nombre": "gimp", "filtro": {'id': 'win-download-link'}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
+    # "filtro": {'href': lambda href: href and re.search(r'win64-setup.exe', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"filezilla.html, internet.html"}},
+    #{"url": "https://sourceforge.net/projects/atunes/files/latest/download", "nombre": "aTunes",
+    # "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"atunes.html, multimedia.html"}},
+    #{"url": "https://www.gimp.org/downloads/", "nombre": "gimp",
+    # "filtro": {'id': 'win-download-link'}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"gimp.html, multimedia.html"}},
     #{"url": "https://www.videolan.org/", "nombre": "vlc",
-    # "filtro": {'href': lambda href: href and re.search(r'win64.exe', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
-    #{"url": "https://obsproject.com/es", "nombre": "OBS-Studio",
-    # "filtro": {'href': lambda href: href and re.search(r'x64.exe', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
-    #{"url": "https://sourceforge.net/projects/pidgin/files/latest/download", "nombre": "pidgin", "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
+    # "filtro": {'href': lambda href: href and re.search(r'win64.exe', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"vlc.html, multimedia.html"}},
+    #{"url": "https://obsproject.com/es", "nombre": "OBSStudio",
+    # "filtro": {'href': lambda href: href and re.search(r'x64.exe', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"obsstudio.html, multimedia.html"}},
+    #{"url": "https://sourceforge.net/projects/pidgin/files/latest/download", "nombre": "pidgin",
+    # "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"pidgin.html, utilidades.html"}},
     #{"url": "https://boinc.berkeley.edu/download.php", "nombre": "boinc",
-    # "filtro": {'href': lambda href: href and re.search(r'64.exe', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
+    # "filtro": {'href': lambda href: href and re.search(r'64.exe', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"boinc.html, cientifico.html"}},
     #{"url": "https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html", "nombre": "putty",
-    # "filtro": {'href': lambda href: href and re.search(r'w64/putty-64bit', href)}, "pattern": r'\d+\.\d+', "extension": ".msi", "find_tipe" : 0, "v_simb": "."},
-    #{"url": "https://www.mirc.com/get.php", "nombre": "mIRC", "filtro": "", "pattern": r'\d+\d+\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
-    #{"url": "https://sourceforge.net/projects/libreoffice/files/latest/download", "nombre": "LibreOffice", "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".msi", "find_tipe" : 0, "v_simb": "."},
-    #{"url": "https://download.pdfforge.org/download/pdfcreator/PDFCreator-stable?download", "nombre": "PDFCreator", "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
+    # "filtro": {'href': lambda href: href and re.search(r'w64/putty-64bit', href)}, "pattern": r'\d+\.\d+', "extension": ".msi", "find_tipe" : 0, "v_simb": ".", "html":{"putty.html, internet.html"}},
+    #{"url": "https://www.mirc.com/get.php", "nombre": "mIRC", "filtro": "", "pattern": r'\d+\d+\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"mirc.html, internet.html"}},
+    #{"url": "https://sourceforge.net/projects/libreoffice/files/latest/download", "nombre": "LibreOffice",
+    # "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".msi", "find_tipe" : 0, "v_simb": ".", "html":{"libreoffice.html, oficina.html"}},
+    #{"url": "https://download.pdfforge.org/download/pdfcreator/PDFCreator-stable?download", "nombre": "PDFCreator",
+    # "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"pdfcreator.html, oficina.html"}},
     #{"url": "https://www.audacityteam.org/download/windows/", "nombre": "Audacity",
-    # "filtro": {'href': lambda href: href and re.search(r'64bit.exe', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
-    #{"url": "https://sourceforge.net/projects/imgseek/files/latest/download", "nombre": "imgSeek", "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
+    # "filtro": {'href': lambda href: href and re.search(r'64bit.exe', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"audacity.html, multimedia.html"}},
+    #{"url": "https://sourceforge.net/projects/imgseek/files/latest/download", "nombre": "imgSeek",
+    # "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"imgseek.html, multimedia.html"}},
     #{"url": "https://www.openshot.org/es/download/", "nombre": "OpenShot",
-    # "filtro": {'href': lambda href: href and re.search(r'x86_64.exe', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
-    {"url": "https://sourceforge.net/projects/shotcut/files/latest/download", "nombre": "Shotcut", "filtro": "", "pattern": r'\d+\d+\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
+    # "filtro": {'href': lambda href: href and re.search(r'x86_64.exe', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"openshot.html, multimedia.html"}},
+    {"url": "https://sourceforge.net/projects/shotcut/files/latest/download", "nombre": "Shotcut", "filtro": "", "pattern": r'\d+\d+\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"shotcut.html, multimedia.html"}},
     #{"url": "https://ftp.cixug.es/CRAN/bin/windows/base/", "nombre": "R",
-    # "filtro": {'href': lambda href: href and re.search(r'win.exe', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
+    # "filtro": {'href': lambda href: href and re.search(r'win.exe', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"r.html, cientifico.html"}},
    # {"url": "https://caeis.etech.fh-augsburg.de/downloads/windows/latest-release/", "nombre": "pspp",
-    # "filtro": {'href': lambda href: href and re.search(r'pspp-64bit-install', href)}, "pattern": r'\d+\-\d+\-\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "-"},
+    # "filtro": {'href': lambda href: href and re.search(r'pspp-64bit-install', href)}, "pattern": r'\d+\-\d+\-\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "-", "html":{"pspp.html, cientifico.html"}},
     #{"url": "https://www.octave.org/download", "nombre": "octave",
-    # "filtro": {'href': lambda href: href and re.search(r'w64-installer', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
-    #{"url":  "https://sourceforge.net/projects/maxima/files/latest/download", "nombre": "Maxima", "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
-    # {"url": "https://sourceforge.net/projects/dia-installer/files/latest/download", "nombre": "Dia", "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
-    # {"url": "https://sourceforge.net/projects/ganttproject/files/latest/download", "nombre": "GanttProject", "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
-    # {"url": "https://sourceforge.net/projects/sevenzip/files/latest/download", "nombre": "7-Zip", "filtro": "", "pattern": r'\d+\d+\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ""},
-    # {"url": "https://sourceforge.net/projects/clamwin/files/latest/download", "nombre": "ClamWin", "filtro": "", "pattern": r'\d+\.\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
-    #{"url":  "https://sourceforge.net/projects/notepadplusplus.mirror/files/latest/download", "nombre": "Notepad", "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
+    # "filtro": {'href': lambda href: href and re.search(r'w64-installer', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"octave.html, cientifico.html"}},
+    #{"url":  "https://sourceforge.net/projects/maxima/files/latest/download", "nombre": "Maxima", "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"maxima.html, cientifico.html"}},
+    # {"url": "https://sourceforge.net/projects/dia-installer/files/latest/download", "nombre": "Dia", "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"dia.html, cientifico.html"}},
+    # {"url": "https://sourceforge.net/projects/ganttproject/files/latest/download", "nombre": "GanttProject",
+    # "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"ganttproject.html, cientifico.html"}},
+    # {"url": "https://sourceforge.net/projects/sevenzip/files/latest/download", "nombre": "7Zip", "filtro": "", "pattern": r'\d+\d+\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "", "html":{"7zip.html, utilidades.html"}},
+    # {"url": "https://sourceforge.net/projects/clamwin/files/latest/download", "nombre": "ClamWin",
+    # "filtro": "", "pattern": r'\d+\.\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"clamwin.html, utilidades.html"}},
+    #{"url":  "https://sourceforge.net/projects/notepadplusplus.mirror/files/latest/download", "nombre": "Notepad",
+    # "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"notepad.html, utilidades.html"}},
     # {"url": "https://www.virtualbox.org/wiki/Downloads", "nombre": "VirtualBox",
-    # "filtro": {'href': lambda href: href and re.search(r'Win.exe', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
-    #{"url": "https://sourceforge.net/projects/azureus/files/latest/download", "nombre": "vuze", "filtro": "", "pattern": r'\d+\d+\d+\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ""},
-    #{"url": "https://sourceforge.net/projects/infrarecorder/files/latest/download", "nombre": "InfraRecorder", "filtro": "", "pattern": r'\d+\d+\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ""},
+    # "filtro": {'href': lambda href: href and re.search(r'Win.exe', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"virtualbox.html, utilidades.html"}},
+    #{"url": "https://sourceforge.net/projects/azureus/files/latest/download", "nombre": "vuze", "filtro": "", "pattern": r'\d+\d+\d+\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "", "html":{"vuze.html, utilidades.html"}},
+    #{"url": "https://sourceforge.net/projects/infrarecorder/files/latest/download", "nombre": "InfraRecorder",
+    # "filtro": "", "pattern": r'\d+\d+\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "", "html":{"infrarecorder.html, utilidades.html"}},
     #{"url": "https://mirrors.sahilister.in/blender/release/", "nombre": "Blender",
-    #  "filtro": {'href': lambda href: href and re.search(r'Blender(\d+\.\d+)', href)}, "pattern": r'(\d+\.\d+)', "extension": ".msi", "find_tipe" : 1, "v_simb": "."},
+    #  "filtro": {'href': lambda href: href and re.search(r'Blender(\d+\.\d+)', href)}, "pattern": r'(\d+\.\d+)', "extension": ".msi", "find_tipe" : 1, "v_simb": ".", "html":{"blender.html, multimedia.html"}},
     ### a la hora de obtener la url con 'location' obtiene una version antigua
     #scribus#
     #{"url": "https://sourceforge.net/projects/scribus/files/scribus/", "nombre": "scribus",
-    # "filtro": {'href': lambda href: href and re.search(r'scribus/(\d+\.\d+\.\d+)', href)}, "pattern": r'(\d+\.\d+\.\d+)', "extension": ".exe", "find_tipe" : 1, "v_simb": "."},
+    # "filtro": {'href': lambda href: href and re.search(r'scribus/(\d+\.\d+\.\d+)', href)}, "pattern": r'(\d+\.\d+\.\d+)', "extension": ".exe", "find_tipe" : 1, "v_simb": ".", "html":{"scribus.html, oficina.html"}},
     ### HTTP Error 403: Forbidden 
     #sumatrapdf#
-    ## {"url": "https://www.sumatrapdfreader.org/download-free-pdf-viewer", "nombre": "SumatraPDF",
-    ##  "filtro": {'href': lambda href: href and re.search(r'64-install', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
+    ## {"url": "https://www.sumatrapdfreader.org/download-free-pdf-viewer", "nombre": "Sumatra",
+    ##  "filtro": {'href': lambda href: href and re.search(r'64-install', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"sumatra.html, oficina.html"}},
     #inkscape#
     # {"url": "https://inkscape.org/release/all/windows/64-bit/exe/", "nombre": "inkscape",
-    #  "filtro": {'href': lambda href: href and re.search(r'inkscape-(\d+\.\d+\.\d+)_', href)}, "pattern": r'(\d+\.\d+\.\d+)', "extension": ".exe", "find_tipe" : 2, "v_simb": "."},   
+    #  "filtro": {'href': lambda href: href and re.search(r'inkscape-(\d+\.\d+\.\d+)_', href)}, "pattern": r'(\d+\.\d+\.\d+)', "extension": ".exe", "find_tipe" : 2, "v_simb": ".", "html":{"inkscape.html, multimedia.html"}},   
     ### HTTP Error 403: Forbidden 
     ####{"url": "https://www.zotero.org/download/", "nombre": "zotero",
-    ## "filtro": {'href': lambda href: href and re.search(r'version', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
-     #{"url": "https://ftp.osuosl.org/pub/osgeo/download/qgis/windows/", "nombre": "QGIS-OSGeo4W",
-     #"filtro": {'href': lambda href: href and re.search(r'QGIS-OSGeo4W-(\d+\.\d+\.\d+)', href)}, "pattern": r'(\d+\.\d+\.\d+)', "extension": ".msi", "find_tipe" : 3, "v_simb": "."},
+    ## "filtro": {'href': lambda href: href and re.search(r'version', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"zotero.html, utilidades.html"}},
+     #{"url": "https://ftp.osuosl.org/pub/osgeo/download/qgis/windows/", "nombre": "qgis",
+     #"filtro": {'href': lambda href: href and re.search(r'QGIS-OSGeo4W-(\d+\.\d+\.\d+)', href)}, "pattern": r'(\d+\.\d+\.\d+)', "extension": ".msi", "find_tipe" : 3, "v_simb": ".", "html":{"qgis.html, cientifico.html"}},
     # {"url": "https://cran.rstudio.com/bin/windows/base/", "nombre": "rstudio",
-    # "filtro": {'href': lambda href: href and re.search(r'win.exe', href)}, "pattern": r'(\d+\.\d+\.\d+)', "extension": ".exe", "find_tipe" : 0, "v_simb": "."},
+    # "filtro": {'href': lambda href: href and re.search(r'win.exe', href)}, "pattern": r'(\d+\.\d+\.\d+)', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":{"rstudio.html, cientifico.html"}},
 ]
 
 # Procesar cada descarga
@@ -193,6 +233,7 @@ for descarga in descargas:
     findTipe = descarga["find_tipe"]
     simbolo = descarga["v_simb"]
     enlace_descarga = ""
+    htmls =descarga["html"]
 
     if findTipe == 0:
         # utilizamos el metodo para obtener el enlace, pero si filtro esta vacio le pasamos el link directo sin buscarlo en el html
@@ -240,9 +281,11 @@ for descarga in descargas:
                     #response = descargar_con_reintentos(enlace_descarga, response.headers, 3)  
                     headers = {
                     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0',
-                    }                           
+                    }
+                    nombre_completo = nombre_descarga+extension                           
                     response.headers=headers; 
-                    wget.download(enlace_descarga, f'./descargas/{nombre_descarga}{extension}')
+                    wget.download(enlace_descarga, f'./descargas/{nombre_completo}')
+                    modificar_htmls(htmls, nombre_completo, version_descargada, nombre)
                     print(" Descarga completada.")
                     logging.info("Descarga completada")
                 except Exception as e:
@@ -254,7 +297,7 @@ for descarga in descargas:
                     try:
                         os.remove(f"./descargas/{archivo_a_reemplazar}")
                         print(f"Archivo reemplazado: {archivo_a_reemplazar} por {nombre_descarga}")
-                        logging.info(f"Archivo reemplazado: {archivo_a_reemplazar} por {nombre_descarga}{extension}")
+                        logging.info(f"Archivo reemplazado: {archivo_a_reemplazar} por {nombre_completo}")
                     except OSError as e:
                         print(f"No se pudo borrar el archivo antiguo: {e}")
                         logging.error(f"No se pudo borrar el archivo antiguo: {e}")
