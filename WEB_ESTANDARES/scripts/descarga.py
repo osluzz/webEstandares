@@ -1,4 +1,4 @@
-from urllib.parse import urlparse, parse_qs, unquote, urljoin
+from urllib.parse import unquote, urljoin
 # Importar módulos necesarios para la manipulación de html", "solicitudes HTTP, expresiones regulares,
 # descargas de archivos y manipulación de archivos y tiempo.
 import requests
@@ -66,7 +66,7 @@ def obtener_enlace_descarga(url, filtro):
         return None
 
 #Funcion para buscar la ultima version dentro de la url ejemplo /blender x.x,
-def encontrar_version_mas_alta(url, filtro, pattern):
+def encontrar_version_mas_alta(url, filtro, pattern, simbolo):
     # Realizar la solicitud HTTP
     response = requests.get(url)
     html_content = response.content
@@ -85,7 +85,7 @@ def encontrar_version_mas_alta(url, filtro, pattern):
         if match:
             version = match.group(1)
             # Verificar si esta versión es mayor que la versión previamente encontrada
-            if version_mayor is None or comparar_versiones(version, version_mayor) > 0:
+            if version_mayor is None or comparar_versiones(version, version_mayor, simbolo) > 0:
                 version_mayor = version
                 # Calcular la parte diferente del enlace con la versión mayor
                 #parte_diferente = re.sub(pattern, "", enlace['href'])
@@ -95,9 +95,13 @@ def encontrar_version_mas_alta(url, filtro, pattern):
     return  parte_diferente
 
 def comparar_versiones(version1, version2, simbolo):
-    
-    partes_version1 = version1.split(simbolo)
-    partes_version2 = version2.split(simbolo)
+
+    if simbolo:
+        partes_version1 = version1.split(simbolo)
+        partes_version2 = version2.split(simbolo)
+    else:
+        partes_version1 = version1
+        partes_version2 = version2
     for i in range(len(partes_version1)):
         if int(partes_version1[i]) < int(partes_version2[i]):
             return -1
@@ -107,7 +111,7 @@ def comparar_versiones(version1, version2, simbolo):
 
 # Función para buscar un archivo existente para reemplazar si no encuentra version antigua devuelve 'primera descarga'
 def buscar_archivo_a_reemplazar(version_descargada, nombre, simbolo):  
-    for filename in os.listdir('/srv/repositorio/estandares'):
+    for filename in os.listdir('/srv/repositorios/estandares/aplicacion/'):
         if filename.startswith(nombre):
             version_existente = obtener_version(pattern, filename)
             if version_existente and version_descargada:
@@ -124,9 +128,9 @@ def modificar_htmls(html_files, enlace, version, aplicacion):
     for index, html_file in enumerate(html_files):
         # Construir la ruta adecuada dependiendo del índice
         if index == 0:
-            ruta = "/srv/repositorio/webnueva/aplicacion" + html_file
+            ruta = "/srv/repositorios/webnueva/aplicacion/" + html_file
         else:
-            ruta = "/srv/repositorio/webnueva/aplicaciones" + html_file
+            ruta = "/srv/repositorios/webnueva/aplicaciones/" + html_file
 
         # Abrir el archivo HTML y leer su contenido
         with open(ruta, "r") as f:
@@ -245,13 +249,13 @@ for descarga in descargas:
         ### De momento esto solo se utiliza para la descarga de blender
         # Si findAll es verdadero utilizaremos el metodo obtener_enlace_descarga
             filtro2={'href': lambda href: href and re.search(extension, href)}
-            doble_filtro = encontrar_version_mas_alta(url, filtro, pattern)
+            doble_filtro = encontrar_version_mas_alta(url, filtro, pattern, simbolo)
             url = url + doble_filtro
             enlace_descarga = obtener_enlace_descarga(url, filtro2)        
     elif findTipe == 2:
-        enlace_descarga = encontrar_version_mas_alta(url, filtro, pattern)
+        enlace_descarga = encontrar_version_mas_alta(url, filtro, pattern, simbolo)
     elif findTipe == 3:
-        enlace_descarga = url + encontrar_version_mas_alta(url, filtro, pattern)         
+        enlace_descarga = url + encontrar_version_mas_alta(url, filtro, pattern, simbolo)
     if enlace_descarga:
         logging.info(f'Enlace de descarga encontrado: {enlace_descarga}')
         response = requests.head(enlace_descarga)
@@ -284,17 +288,17 @@ for descarga in descargas:
                     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0',
                     }
                     nombre_completo = nombre_descarga+extension                           
-                    response.headers=headers; 
-                    wget.download(enlace_descarga, f'/srv/repositorio/estandares/{nombre_completo}')
+                    response.headers = headers
+                    wget.download(enlace_descarga, f'/srv/repositorios/estandares/aplicacion/{nombre_completo}')
                     modificar_htmls(htmls, nombre_completo, version_descargada, nombre)
                     logging.info("Descarga completada")
                 except Exception as e:
                     logging.error(f"Error al descargar el archivo: {e}")
                     continue
                 # borrar archivo de la version antigua
-                if os.path.exists(f"/srv/repositorio/estandares/{archivo_a_reemplazar}"):
+                if os.path.exists(f"/srv/repositorios/estandares/aplicacion/{archivo_a_reemplazar}"):
                     try:
-                        os.remove(f"/srv/repositorio/estandares/{archivo_a_reemplazar}")
+                        os.remove(f"/srv/repositorios/estandares/aplicacion/{archivo_a_reemplazar}")
                         logging.info(f"Archivo reemplazado: {archivo_a_reemplazar} por {nombre_completo}")
                     except OSError as e:
                         logging.error(f"No se pudo borrar el archivo antiguo: {e}")
