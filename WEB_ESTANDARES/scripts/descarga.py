@@ -292,8 +292,8 @@ for descarga in descargas:
                     }
                     nombre_completo = nombre_descarga+extension                           
                     response.headers = headers
-                    wget.download(enlace_descarga, f'/srv/repositorios/estandares/aplicacion/{nombre_completo}')
-                    modificar_htmls(htmls, nombre_completo, version_descargada, nombre)
+                    wget.download(enlace_descarga, f'/srv/repositorios/estandares/aplicacion/{nombre_completo.lower()}')
+                    modificar_htmls(htmls, nombre_completo.lower(), version_descargada, nombre)
                     logging.info("Descarga completada")
                 except Exception as e:
                     logging.error(f"Error al descargar el archivo: {e}")
