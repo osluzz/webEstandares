@@ -308,7 +308,7 @@ for descarga in descargas:
                 else:
                     logging.info(f"{archivo_a_reemplazar} {nombre_descarga}")
             else:
-                logging.info(f"No se a encontrado una version nueva para descargar de {nombre}")
+                logging.info(f"No se ha encontrado una version nueva para descargar de {nombre}")
         else:
             logging.info(f"Error al descargar el archivo: Código de estado {response.status_code}")
     else:
