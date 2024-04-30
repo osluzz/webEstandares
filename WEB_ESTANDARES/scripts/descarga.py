@@ -1,7 +1,8 @@
+import codecs
+import io
 from urllib.parse import unquote, urljoin
 # Importar módulos necesarios para la manipulación de html", "solicitudes HTTP, expresiones regulares,
 # descargas de archivos y manipulación de archivos y tiempo.
-import io
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -133,29 +134,30 @@ def modificar_htmls(html_files, enlace, version, aplicacion):
         else:
             ruta = "/srv/repositorios/webnueva/aplicaciones/" + html_file
 
-         # Abrir el archivo HTML y leer su contenido
-        with io.open(ruta, "r", encoding="iso-8859-15") as f:
-             html_content = f.read()
+        codificaciones = ["UTF-8","iso-8859-15", "latin1", "windows-1252"]
+        for codificacion in codificaciones:
+            try:
+                with codecs.open(ruta, "r", encoding=codificacion) as f:
+                 html_content = f.read()
+                
+                soup = BeautifulSoup(html_content, "html.parser")
 
-        # Crear un objeto BeautifulSoup para analizar el HTML
-        soup = BeautifulSoup(html_content, "html.parser")
+                 # Encuentra el elemento <a> y <span> en el HTML por el id
+                link = soup.find("a", id=aplicacion.lower())
+                span = soup.find('span', id=aplicacion.lower()+"_version")
+                 # Modificar el atributo href del enlace encontrado
+                if link:
+                     link["href"] = "https://softlibre.unizar.es/estandares/aplicacion/"+enlace
+                if span:
+                     span.string = version
 
-        # Encuentra el elemento <a> y <span> en el HTML por el id
-        link = soup.find("a", id=aplicacion.lower())
-        span = soup.find('span', id=aplicacion.lower()+"_version")
+                html_str = str(soup)
 
-        # Modificar el atributo href del enlace encontrado
-        if link:
-            link["href"] = "https://softlibre.unizar.es/estandares/aplicacion/"+enlace
-
-        if span:
-             span.string = version
-         # html_str = str(soup)
-         # # Guardar los cambios en el archivo HTML
-         # with open(ruta, "w", encoding='iso-8859-15') as f:
-         #    f.write(html_str.encode('iso-8859-15').decode('iso-8859-15'))
-        with io.open(ruta, "w", encoding="iso-8859-15") as f:
-            f.write(str(soup))
+                with open(ruta, "w") as f:
+                    f.write(html_str)
+                break    
+            except UnicodeDecodeError:
+               logging.warn(f"No se pudo abrir el archivo con la codificación {codificacion}")
 
 # Lista de descargas con la información de cada una
 descargas = [
@@ -236,7 +238,7 @@ descargas = [
 # Procesar cada descarga
 for descarga in descargas:
     url = descarga["url"]
-    nombre = descarga["nombre"]
+    nombre = descarga["nombre"].lower()
     filtro = descarga["filtro"]
     pattern = descarga["pattern"]
     extension = descarga["extension"]
