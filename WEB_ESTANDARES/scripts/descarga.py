@@ -1,5 +1,4 @@
 import codecs
-import io
 from urllib.parse import unquote, urljoin
 # Importar módulos necesarios para la manipulación de html", "solicitudes HTTP, expresiones regulares,
 # descargas de archivos y manipulación de archivos y tiempo.
@@ -90,7 +89,6 @@ def encontrar_version_mas_alta(url, filtro, pattern, simbolo):
             if version_mayor is None or comparar_versiones(version, version_mayor, simbolo) > 0:
                 version_mayor = version
                 # Calcular la parte diferente del enlace con la versión mayor
-                #parte_diferente = re.sub(pattern, "", enlace['href'])
                 parte_igual = enlace['href']
                 url_entera = urljoin(url, parte_igual)
                 parte_diferente = url_entera.replace(url, "", 1)if url_entera else None
@@ -145,8 +143,8 @@ def modificar_htmls(html_files, enlace, version, aplicacion):
                  # Encuentra el elemento <a> y <span> en el HTML por el id
                 link = soup.find("a", id=aplicacion.lower())
                 span = soup.find('span', id=aplicacion.lower()+"_version")
-                 # Modificar el atributo href del enlace encontrado
                 if link:
+                    #Modificar el atributo href del enlace encontrado
                      link["href"] = "https://softlibre.unizar.es/estandares/aplicacion/"+enlace
                 if span:
                      span.string = version
@@ -162,7 +160,8 @@ def modificar_htmls(html_files, enlace, version, aplicacion):
 # Lista de descargas con la información de cada una
 descargas = [
     {"url": "https://www.thunderbird.net/es-ES/", "nombre": "Thunderbird",
-     "filtro": {'href': lambda href: href and re.search(r'os=win64&lang=es-ES', href)}, "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":["thunderbird.html", "internet.html"]},
+     "filtro": {'href': lambda href: href and re.search(r'os=win64&lang=es-ES', href)}, "pattern": r'\d+\.\d+\.\d+',
+     "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":["thunderbird.html", "internet.html"]},
     {"url": "https://download.mozilla.org/?product=firefox-latest-ssl&os=win64&lang=es-ES", "nombre": "Firefox",
      "filtro": "", "pattern": r'\d+\.\d+\.\d+', "extension": ".exe", "find_tipe" : 0, "v_simb": ".", "html":["firefox.html", "internet.html"]},
     {"url": "https://filezilla-project.org/download.php?show_all=1", "nombre": "FileZilla",
@@ -251,13 +250,16 @@ for descarga in descargas:
         # utilizamos el metodo para obtener el enlace, pero si filtro esta vacio le pasamos el link directo sin buscarlo en el html
         enlace_descarga = obtener_enlace_descarga(url, filtro) if filtro else url                
     elif findTipe == 1:
-        ### De momento esto solo se utiliza para la descarga de blender
-        # Si findAll es verdadero utilizaremos el metodo obtener_enlace_descarga
+            #Hara una búsqueda de todas la urls que coincidan con el filtro
+            # y buscara la versión mas alta de las urls encontradas utilizara el pattern para esto.
+            # Después hara otro filtrado por extensión para obtener solo una url
             filtro2={'href': lambda href: href and re.search(extension, href)}
             doble_filtro = encontrar_version_mas_alta(url, filtro, pattern, simbolo)
             url = url + doble_filtro
             enlace_descarga = obtener_enlace_descarga(url, filtro2)        
     elif findTipe == 2:
+        #hara una búsqueda de todas la urls que coincidan con el filtro
+        # y buscará la versión mas alta de las urls encontradas utilizará el pattern para esto
         enlace_descarga = encontrar_version_mas_alta(url, filtro, pattern, simbolo)
     elif findTipe == 3:
         enlace_descarga = url + encontrar_version_mas_alta(url, filtro, pattern, simbolo)
@@ -270,7 +272,7 @@ for descarga in descargas:
         if response.status_code == 200 or response.status_code == 302 or response.status_code == 307:
             # Obtener el nombre del archivo desde el enlace de descarga
             location = unquote(response.url)
-            # Obtener la versión del archivo a descargar, si no pasamos pattern sera vacio
+            # Obtener la versión del archivo a descargar, si no pasamos pattern será vacio
             if pattern:
                 version_descargada = obtener_version(pattern, location)
                 if not version_descargada:
@@ -288,19 +290,19 @@ for descarga in descargas:
             if archivo_a_reemplazar:
                 # Descargar el archivo
                 try:
-                    #response = descargar_con_reintentos(enlace_descarga, response.headers, 3)  
                     headers = {
                     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0',
                     }
                     nombre_completo = nombre_descarga+extension                           
                     response.headers = headers
                     wget.download(enlace_descarga, f'/srv/repositorios/estandares/aplicacion/{nombre_completo.lower()}')
+                    #modificamos los htmls después de que se a realizadó correctamente la descarga
                     modificar_htmls(htmls, nombre_completo.lower(), version_descargada, nombre)
                     logging.info("Descarga completada")
                 except Exception as e:
                     logging.error(f"Error al descargar el archivo: {e}")
                     continue
-                # borrar archivo de la version antigua
+                # borrar archivo de la versión antigua
                 if os.path.exists(f"/srv/repositorios/estandares/aplicacion/{archivo_a_reemplazar}"):
                     try:
                         os.remove(f"/srv/repositorios/estandares/aplicacion/{archivo_a_reemplazar}")
