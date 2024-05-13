@@ -143,11 +143,20 @@ def modificar_htmls(html_files, enlace, version, aplicacion):
                  # Encuentra el elemento <a> y <span> en el HTML por el id
                 link = soup.find("a", id=aplicacion.lower())
                 span = soup.find('span', id=aplicacion.lower()+"_version")
+                li = soup.find('li', id=aplicacion.lower()+"_version")
                 if link:
                     #Modificar el atributo href del enlace encontrado
                      link["href"] = "https://softlibre.unizar.es/estandares/aplicacion/"+enlace
                 if span:
                      span.string = version
+                
+                if li:
+                    strong_tag = li.find('strong')
+                    if strong_tag:
+                        texto_despues = strong_tag.find_next_sibling(text=True)
+                        if texto_despues:
+                            # Reemplazar el contenido de texto después de <strong> con la nueva versión
+                            texto_despues.replace_with(" " + version)
 
                 html_str = str(soup)
 
